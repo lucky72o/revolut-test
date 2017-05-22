@@ -1,0 +1,13 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET         /                                  controllers.Application.index()
+
+GET         /users                             controllers.UserController.getUsers
+GET         /users/$id<[0-9]+>                 controllers.UserController.getUser(id: Long)
+
+POST        /users/create                      controllers.UserController.createUser()
+
+POST        /users/$id<[0-9]+>/transfer        controllers.MoneyTransferController.transferFunds(id: Long)
