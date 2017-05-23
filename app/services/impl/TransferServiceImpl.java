@@ -4,12 +4,13 @@ import dtos.MoneyTransferResponse;
 import models.Currency;
 import models.User;
 import models.Wallet;
-import play.db.jpa.Transactional;
 import services.TransferService;
 import services.UserService;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TransferServiceImpl implements TransferService {
 
@@ -20,25 +21,38 @@ public class TransferServiceImpl implements TransferService {
         this.userService = userService;
     }
 
+    private Lock lock = new ReentrantLock();
+
     @Override
-    @Transactional
-    // I'm aware of race condition possibility here. Can fix it if required.
-    public MoneyTransferResponse transferFunds(User fromUser, User toUser, Currency currency, BigDecimal amount) {
+    public MoneyTransferResponse transferFunds(Long fromUserId, Long toUserId, Currency currency, BigDecimal amount) {
 
-        if (validateTransferAmountIsAvailable(fromUser, currency, amount)) {
-            if (validateTargetedUserHasAppropriateWallet(toUser, currency)) {
+        // Simple solution to prevent race condition.
+        lock.lock();
 
-                transfer(fromUser, toUser, amount);
-                return new MoneyTransferResponse(true, "Money transfer was successful.");
+        try {
+            // fetch users again to get actual wallet balance
+            User fromUser = userService.findById(fromUserId).get();
+            User toUser = userService.findById(toUserId).get();
 
-            } else {
-                return new MoneyTransferResponse(false, String.format("User with id: {%d} doesn't have a wallet supporting currency: {%s}",
-                        fromUser.getId(), currency));
+            if (validateTransferAmountIsAvailable(fromUser, currency, amount)) {
+                if (validateTargetedUserHasAppropriateWallet(toUser, currency)) {
+
+                    transfer(fromUser, toUser, amount);
+                    return new MoneyTransferResponse(true, "Money transfer was successful.");
+
+                } else {
+                    return new MoneyTransferResponse(false, String.format("User with id: {%d} doesn't have a wallet supporting currency: {%s}",
+                            fromUserId, currency));
+                }
             }
-        }
 
-        return new MoneyTransferResponse(false, String.format("User with id: {%d} doesn't have enough amount: {%f} of currency: {%s}",
-                fromUser.getId(), amount, currency));
+
+            return new MoneyTransferResponse(false, String.format("User with id: {%d} doesn't have enough amount: {%f} of currency: {%s}",
+                    fromUserId, amount, currency));
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void transfer(User fromUser, User toUser, BigDecimal amount) {
@@ -59,6 +73,6 @@ public class TransferServiceImpl implements TransferService {
 
     private boolean validateTransferAmountIsAvailable(User user, Currency currency, BigDecimal amount) {
         Wallet wallet = user.getWallet();
-        return currency.equals(wallet.getCurrency()) && wallet.getAmount().compareTo(amount) > 0;
+        return currency.equals(wallet.getCurrency()) && wallet.getAmount().compareTo(amount) >= 0;
     }
 }

@@ -1,6 +1,5 @@
 package repositories.impl;
 
-import models.Wallet;
 import repositories.UserRepository;
 import models.User;
 import javax.inject.Inject;

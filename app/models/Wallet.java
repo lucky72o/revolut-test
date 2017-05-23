@@ -7,6 +7,14 @@ import java.math.BigDecimal;
 @Entity
 public class Wallet {
 
+    public Wallet(Currency currency, BigDecimal amount) {
+        this.currency = currency;
+        this.amount = amount;
+    }
+
+    public Wallet() {
+    }
+
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
