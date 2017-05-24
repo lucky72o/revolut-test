@@ -26,11 +26,11 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public MoneyTransferResponse transferFunds(Long fromUserId, Long toUserId, Currency currency, BigDecimal amount) {
 
-        // Simple solution to prevent race condition.
+        // Basic solution to prevent race condition.
         lock.lock();
 
         try {
-            // fetch users again to get actual wallet balance
+            // fetch users again to get actual wallet balances
             User fromUser = userService.findById(fromUserId).get();
             User toUser = userService.findById(toUserId).get();
 

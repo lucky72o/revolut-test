@@ -5,14 +5,6 @@ import javax.persistence.*;
 @Entity
 public class User {
 
-    public User() {
-    }
-
-    public User(String name, Wallet wallet) {
-        this.name = name;
-        this.wallet = wallet;
-    }
-
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
@@ -21,6 +13,14 @@ public class User {
 
     @OneToOne(cascade = CascadeType.ALL)
     private Wallet wallet;
+
+    public User() {
+    }
+
+    public User(String name, Wallet wallet) {
+        this.name = name;
+        this.wallet = wallet;
+    }
 
     public Long getId() {
         return id;

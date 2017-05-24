@@ -7,6 +7,14 @@ import java.math.BigDecimal;
 @Entity
 public class Wallet {
 
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
+
+    private Currency currency;
+
+    private BigDecimal amount;
+
     public Wallet(Currency currency, BigDecimal amount) {
         this.currency = currency;
         this.amount = amount;
@@ -15,13 +23,6 @@ public class Wallet {
     public Wallet() {
     }
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
-
-    private Currency currency;
-
-    private BigDecimal amount;
 
     public Long getId() {
         return id;
