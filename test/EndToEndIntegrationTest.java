@@ -16,23 +16,35 @@ import static play.libs.Json.toJson;
 public class EndToEndIntegrationTest extends WithServer {
 
     @Test
-    public void testMoneyTransactionEndToEnd() throws Exception {
+    public void shouldSuccessfullyTransferMoney() throws Exception {
         long fromUserId = createUser();
         long toUserId = createUser();
 
-        final String body = transferMoney(fromUserId, toUserId);
+        final String body = transferMoney(fromUserId, toUserId, 10d);
         assertThat(body, containsString("Money transfer was successful."));
 
         validateUserHasCorrectAmount(fromUserId, 0);
         validateUserHasCorrectAmount(toUserId, 20);
     }
 
-    private String transferMoney(long fromUserId, long toUserId) {
+    @Test
+    public void shouldNotSuccessfullyTransferMoneyDueToInsufficientAmount() throws Exception {
+        long fromUserId = createUser();
+        long toUserId = createUser();
+
+        final String body = transferMoney(fromUserId, toUserId, 20d);
+        assertThat(body, containsString("User with id: {"+ fromUserId +"} doesn't have enough amount: {20.000000} of currency: {GBP}"));
+
+        validateUserHasCorrectAmount(fromUserId, 10);
+        validateUserHasCorrectAmount(toUserId, 10);
+    }
+
+    private String transferMoney(long fromUserId, long toUserId, double amount) {
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("fromUser", fromUserId);
         bodyMap.put("toUser", toUserId);
         bodyMap.put("currency", "GBP");
-        bodyMap.put("amount", "10");
+        bodyMap.put("amount", amount);
 
         Http.RequestBuilder request = new Http.RequestBuilder()
                 .method(POST)
