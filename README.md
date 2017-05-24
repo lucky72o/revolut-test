@@ -1,4 +1,4 @@
-- To run this application, you need Jaca 1.8 to be installed
+- To run this application, you need Java 1.8 to be installed
 - sbt-dist is included
 - To start the app run:
 sbt run or sbt.bat run
