@@ -20,6 +20,14 @@ public class EndToEndIntegrationTest extends WithServer {
         long fromUserId = createUser();
         long toUserId = createUser();
 
+        final String body = transferMoney(fromUserId, toUserId);
+        assertThat(body, containsString("Money transfer was successful."));
+
+        validateUserHasCorrectAmount(fromUserId, 0);
+        validateUserHasCorrectAmount(toUserId, 20);
+    }
+
+    private String transferMoney(long fromUserId, long toUserId) {
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("fromUser", fromUserId);
         bodyMap.put("toUser", toUserId);
@@ -32,12 +40,7 @@ public class EndToEndIntegrationTest extends WithServer {
                 .bodyJson(toJson(bodyMap));
 
         Result result = route(app, request);
-        final String body = contentAsString(result);
-
-        assertThat(body, containsString("Money transfer was successful."));
-
-        validateUserHasCorrectAmount(fromUserId, 0);
-        validateUserHasCorrectAmount(toUserId, 20);
+        return contentAsString(result);
     }
 
     private void validateUserHasCorrectAmount(long userId, double amount) {
