@@ -9,8 +9,6 @@ import services.UserService;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class TransferServiceImpl implements TransferService {
 
@@ -21,38 +19,24 @@ public class TransferServiceImpl implements TransferService {
         this.userService = userService;
     }
 
-    private Lock lock = new ReentrantLock();
-
     @Override
-    public MoneyTransferResponse transferFunds(Long fromUserId, Long toUserId, Currency currency, BigDecimal amount) {
+    public MoneyTransferResponse transferFunds(User fromUser, User toUser, Currency currency, BigDecimal amount) {
+        if (validateTransferAmountIsAvailable(fromUser, currency, amount)) {
+            if (validateTargetedUserHasAppropriateWallet(toUser, currency)) {
 
-        // Basic solution to prevent race condition.
-        lock.lock();
+                transfer(fromUser, toUser, amount);
+                return new MoneyTransferResponse(true, "Money transfer was successful.");
 
-        try {
-            // fetch users again to get actual wallet balances
-            User fromUser = userService.findById(fromUserId).get();
-            User toUser = userService.findById(toUserId).get();
-
-            if (validateTransferAmountIsAvailable(fromUser, currency, amount)) {
-                if (validateTargetedUserHasAppropriateWallet(toUser, currency)) {
-
-                    transfer(fromUser, toUser, amount);
-                    return new MoneyTransferResponse(true, "Money transfer was successful.");
-
-                } else {
-                    return new MoneyTransferResponse(false, String.format("User with id: {%d} doesn't have a wallet supporting currency: {%s}",
-                            fromUserId, currency));
-                }
+            } else {
+                return new MoneyTransferResponse(false, String.format("User with id: {%d} doesn't have a wallet supporting currency: {%s}",
+                        fromUser.getId(), currency));
             }
-
-
-            return new MoneyTransferResponse(false, String.format("User with id: {%d} doesn't have enough amount: {%f} of currency: {%s}",
-                    fromUserId, amount, currency));
-
-        } finally {
-            lock.unlock();
         }
+
+
+        return new MoneyTransferResponse(false, String.format("User with id: {%d} doesn't have enough amount: {%f} of currency: {%s}",
+                fromUser.getId(), amount, currency));
+
     }
 
     private void transfer(User fromUser, User toUser, BigDecimal amount) {

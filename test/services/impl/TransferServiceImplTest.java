@@ -13,7 +13,6 @@ import services.TransferService;
 import services.UserService;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 
 import static org.mockito.ArgumentMatchers.any;
@@ -36,10 +35,7 @@ public class TransferServiceImplTest {
         User fromUser = getUser();
         User toUser = getUser();
 
-        when(userServiceMock.findById(1L)).thenReturn(Optional.of(fromUser));
-        when(userServiceMock.findById(2L)).thenReturn(Optional.of(toUser));
-
-        MoneyTransferResponse response = transferService.transferFunds(1L, 2L, Currency.GBP, BigDecimal.valueOf(11));
+        MoneyTransferResponse response = transferService.transferFunds(fromUser, toUser, Currency.GBP, BigDecimal.valueOf(11));
 
         assertThat(response.isSuccessful()).isFalse();
         verify(userServiceMock, times(0)).update(any(User.class));
@@ -51,10 +47,7 @@ public class TransferServiceImplTest {
         User toUser = getUser();
         toUser.getWallet().setCurrency(Currency.EUR);
 
-        when(userServiceMock.findById(1L)).thenReturn(Optional.of(fromUser));
-        when(userServiceMock.findById(2L)).thenReturn(Optional.of(toUser));
-
-        MoneyTransferResponse response = transferService.transferFunds(1L, 2L, Currency.GBP, BigDecimal.valueOf(11));
+        MoneyTransferResponse response = transferService.transferFunds(fromUser, toUser, Currency.GBP, BigDecimal.valueOf(11));
 
         assertThat(response.isSuccessful()).isFalse();
         verify(userServiceMock, times(0)).update(any(User.class));
@@ -65,10 +58,7 @@ public class TransferServiceImplTest {
         User fromUser = getUser();
         User toUser = getUser();
 
-        when(userServiceMock.findById(1L)).thenReturn(Optional.of(fromUser));
-        when(userServiceMock.findById(2L)).thenReturn(Optional.of(toUser));
-
-        MoneyTransferResponse response = transferService.transferFunds(1L, 2L, Currency.GBP, BigDecimal.valueOf(5));
+        MoneyTransferResponse response = transferService.transferFunds(fromUser, toUser, Currency.GBP, BigDecimal.valueOf(5));
 
         assertThat(response.isSuccessful()).isTrue();
         verify(userServiceMock, times(2)).update(any(User.class));

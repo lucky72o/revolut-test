@@ -15,6 +15,9 @@ public class Wallet {
 
     private BigDecimal amount;
 
+    @Version
+    private Long version;
+
     public Wallet(Currency currency, BigDecimal amount) {
         this.currency = currency;
         this.amount = amount;
@@ -46,5 +49,13 @@ public class Wallet {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

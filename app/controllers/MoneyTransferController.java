@@ -40,7 +40,7 @@ public class MoneyTransferController extends Controller {
         }
 
         MoneyTransferResponse response =
-                transferService.transferFunds(form.getFromUser(), form.getToUser(), form.getCurrency(), form.getAmount());
+                transferService.transferFunds(fromUser.get(), toUser.get(), form.getCurrency(), form.getAmount());
 
         if(response.isSuccessful()) {
             return ok(response.getMessage());
